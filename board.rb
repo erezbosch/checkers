@@ -1,10 +1,13 @@
+require 'colorize'
+require_relative 'piece'
+
 class Board
   def initialize
     @grid = Array.new(8) { Array.new(8) }
   end
 
   def populate
-    (0..2).each do |row_idx|
+    3.times do |row_idx|
       populate_row(row_idx)
       populate_row(7 - row_idx)
     end
@@ -29,7 +32,23 @@ class Board
     @grid[row][col] = thing
   end
 
+  def get_bg_color pos
+    pos.inject(:+).odd? ? :white : :blue
+  end
+
+  def display
+    8.times do |row_idx|
+      8.times do |col_idx|
+        pos = [row_idx, col_idx]
+        print "#{self[pos].to_s} ".colorize(:background => get_bg_color(pos))
+      end
+      puts
+    end
+  end
+
   def self.prepare_board
     self.new.populate
   end
+
+
 end
