@@ -54,6 +54,7 @@ class Board
         duped_board[pos] = self[pos].dup(duped_board) unless self[pos].nil?
       end
     end
+    duped_board
   end
 
   def pieces
