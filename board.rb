@@ -37,12 +37,13 @@ class Board
   end
 
   def display
+    puts (0..7).inject("") { |str, i| str << " #{i} " }
     8.times do |row_idx|
       8.times do |col_idx|
         pos = [row_idx, col_idx]
         print " #{self[pos].to_s} ".rjust(3).colorize(background: bg_color(pos))
       end
-      puts
+      puts " #{row_idx}"
     end
   end
 
@@ -62,7 +63,7 @@ class Board
   end
 
   def over?
-    pieces.map(&:color).uniq.size == 1
+    pieces.map(&:color).uniq.size < 2
   end
 
   def winner
@@ -70,7 +71,7 @@ class Board
     pieces.first.color
   end
 
-  def self.prepare_board
+  def self.prepare
     b = self.new
     b.populate
     b
