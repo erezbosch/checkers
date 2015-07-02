@@ -2,8 +2,11 @@ require 'colorize'
 require_relative 'piece'
 
 class Board
+  attr_reader :cursor
+
   def initialize
     @grid = Array.new(8) { Array.new(8) }
+    @cursor = [4, 4]
   end
 
   def populate
@@ -21,7 +24,6 @@ class Board
     end
   end
 
-
   def [] pos
     row, col = pos
     @grid[row][col]
@@ -33,7 +35,11 @@ class Board
   end
 
   def bg_color pos
-    pos.inject(:+).odd? ? :yellow : :blue
+    if pos == @cursor
+      :green
+    else
+      pos.inject(:+).odd? ? :white : :blue
+    end
   end
 
   def display
@@ -69,6 +75,11 @@ class Board
   def winner
     return false unless over?
     pieces.first.color
+  end
+
+  def move_cursor dir
+    new_cursor = [@cursor[0] + dir[0], @cursor[1] + dir[1]]
+    @cursor = new_cursor if new_cursor.all? { |coord| coord.between?(0, 7) }
   end
 
   def self.prepare
