@@ -46,11 +46,32 @@ class Board
     end
   end
 
+  def dup
+    duped_board = self.class.new
+    8.times do |row_idx|
+      8.times do |col_idx|
+        pos = row_idx, col_idx
+        duped_board[pos] = self[pos].dup(duped_board) unless self[pos].nil?
+      end
+    end
+  end
+
+  def pieces
+    @grid.flatten.compact
+  end
+
+  def over?
+    pieces.map(&:color).uniq.size == 1
+  end
+
+  def winner
+    return false unless over?
+    pieces.first.color
+  end
+
   def self.prepare_board
     b = self.new
     b.populate
     b
   end
-
-
 end
