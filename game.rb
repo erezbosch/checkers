@@ -14,7 +14,7 @@ class Game
       take_turn
     end
     system "clear"
-    puts "\n\n#{@board.winner.to_s.capitalize} wins!"
+    display_message("#{@board.winner.to_s.capitalize} wins!")
   end
 
   private
@@ -31,16 +31,16 @@ class Game
 
       @board[input.first].perform_moves(input.drop(1))
     rescue InvalidMoveError
-      system "clear"
-      display_message("Invalid move sequence. Try again.")
-      sleep(0.5)
+      display_message("Invalid move sequence!")
       retry
     end
     switch_players!
   end
 
   def display_message(message)
-    8.times { puts message.cjust.on_red }
+    system "clear"
+    puts "\n\n\n#{message.center(75)}"
+    sleep(1.5)
   end
 end
 
@@ -51,16 +51,6 @@ class HumanPlayer
     @board, @color = board, color
     @input = []
   end
-
-  # input by hand
-
-  def get_move_sequence
-    puts "Enter your move sequence starting with the piece you'd like to move,"
-    print "for example '2,0;4,2;6,4'. \n> "
-    gets.chomp.split(";").map { |move| move.split(",").map(&:to_i) }
-  end
-
-  # input from cursor
 
   def get_moves_from_cursor
     @input = []

@@ -28,15 +28,6 @@ class Piece
     Piece.new(@pos, duped_board, @color, king?)
   end
 
-  def valid_move_seq? move_sequence
-    duped_board = @board.dup
-    duped_piece = duped_board[@pos]
-    duped_piece.perform_moves!(move_sequence)
-    true
-  rescue InvalidMoveError
-    false
-  end
-
   protected
 
   def perform_moves! move_sequence
@@ -48,6 +39,15 @@ class Piece
       jump = perform_jump(move_sequence[i])
       raise InvalidMoveError unless jump
     end
+  end
+
+  def valid_move_seq? move_sequence
+    duped_board = @board.dup
+    duped_piece = duped_board[@pos]
+    duped_piece.perform_moves!(move_sequence)
+    true
+  rescue InvalidMoveError
+    false
   end
 
   def perform_slide new_pos
@@ -108,10 +108,8 @@ class Piece
   def move_diffs
     if king?
       DOWNWARD_MOVES + UPWARD_MOVES
-    elsif color == :black
-      DOWNWARD_MOVES
     else
-      UPWARD_MOVES
+      color == :black ? DOWNWARD_MOVES : UPWARD_MOVES
     end
   end
 end
