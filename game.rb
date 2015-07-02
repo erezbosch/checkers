@@ -1,5 +1,6 @@
 require_relative 'board'
 require 'io/console'
+require 'colorize'
 
 class Game
   def initialize player_classes = [HumanPlayer, HumanPlayer]
@@ -13,7 +14,7 @@ class Game
       take_turn
     end
     system "clear"
-    puts "\n\n#{identify_color(@board.winner)} wins!"
+    puts "\n\n#{@board.winner.to_s.capitalize} wins!"
   end
 
   private
@@ -23,10 +24,6 @@ class Game
   end
 
   def take_turn
-    system "clear"
-    @board.display
-    identify_turn
-
     begin
       input = @players.first.get_moves_from_cursor
 
@@ -34,18 +31,16 @@ class Game
 
       @board[input.first].perform_moves(input.drop(1))
     rescue InvalidMoveError
-      puts "Your input was invalid. Please read the directions carefully."
+      system "clear"
+      display_message("Invalid move sequence. Try again.")
+      sleep(0.5)
       retry
     end
     switch_players!
   end
 
-  def identify_color color
-    color.to_s.capitalize
-  end
-
-  def identify_turn
-    puts "It's #{identify_color(@players.first.color)}'s turn."
+  def display_message(message)
+    8.times { puts message.cjust.on_red }
   end
 end
 
@@ -53,8 +48,8 @@ class HumanPlayer
   attr_reader :color
 
   def initialize board, color
-    @board = board
-    @color = color
+    @board, @color = board, color
+    @input = []
   end
 
   # input by hand
@@ -68,10 +63,13 @@ class HumanPlayer
   # input from cursor
 
   def get_moves_from_cursor
-    input = []
+    @input = []
     char = nil
     until char == " "
+      display_board
+
       char = $stdin.getch
+
       case char
       # handle cursor moves
       when "w"
@@ -82,33 +80,68 @@ class HumanPlayer
         @board.move_cursor([1, 0])
       when "d"
         @board.move_cursor([0, 1])
-
-      # add to move sequence
       when "\r"
-        if input.empty? && !@board[cursor].nil?
-          input << @board.cursor if @board[cursor].color == color
-        elsif !input.empty? && @board[cursor].nil?
-          input << @board.cursor
-          p input
-          unless @board[input.first].valid_move_seq?(input.drop(1))
-            raise InvalidMoveError
-          end
-        end
-
+        @input << cursor unless @input.empty? && invalid_first_selection?
       when "\e"
         exit
       end
-
-      system "clear"
-      @board.display
     end
 
-    p input
-    input
+    display_board
+    @input
+  end
+
+  def invalid_first_selection?
+    @board[cursor].nil? || @board[cursor].color != color
   end
 
   def cursor
     @board.cursor
+  end
+
+  def display_board
+    system "clear"
+    display = Array.new(8) { "" }
+    8.times do |row_idx|
+      8.times do |col_idx|
+        pos = [row_idx, col_idx]
+        display[row_idx] +=
+          " #{@board[pos].to_s} ".rjust(3).colorize(background: bg_color(pos))
+      end
+    end
+
+    display.each_with_index do |row, idx|
+      puts "#{row} #{instructions(idx)}"
+    end
+  end
+
+  def bg_color pos
+    if pos == cursor
+      :green
+    elsif @input.include?(pos)
+      :yellow
+    else
+      pos.inject(:+).odd? ? :white : :blue
+    end
+  end
+
+  def instructions(idx)
+    case idx
+    when 1
+      "It's #{color.to_s.capitalize}'s turn."
+    when 2
+      "Press W-A-S-D to move the cursor or return to select."
+    when 3
+      "First select the piece you'd like to move."
+    when 4
+      "Then select the square(s) that piece should move to."
+    when 5
+      "If you're done, press space to process your move."
+    when 6
+      "Press esc to quit at any time."
+    else
+      ""
+    end
   end
 end
 
