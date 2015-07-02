@@ -1,3 +1,5 @@
+require 'colorize'
+
 class Piece
   attr_reader :pos, :color
 
@@ -11,6 +13,26 @@ class Piece
   def king?
     @king
   end
+
+
+
+  def perform_slide
+  end
+
+  def valid_slide? new_pos
+
+  end
+
+  def to_s
+    symbol = king? ? "K" : "C"
+    color == :black ? symbol.black : symbol.red
+  end
+
+  def empty?
+    false
+  end
+
+  private
 
   def promotion
     if (pos[0] == 0 && color == :red) || (pos[0] == 7 && color == :black)
@@ -26,16 +48,5 @@ class Piece
     else
       UPWARD_MOVES
     end
-  end
-
-  def perform_slide
-  end
-
-  def valid_slide? new_pos
-
-  end
-
-  def to_s
-    king? ? "K" : "C"
   end
 end

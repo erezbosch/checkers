@@ -32,22 +32,24 @@ class Board
     @grid[row][col] = thing
   end
 
-  def get_bg_color pos
-    pos.inject(:+).odd? ? :white : :blue
+  def bg_color pos
+    pos.inject(:+).odd? ? :yellow : :blue
   end
 
   def display
     8.times do |row_idx|
       8.times do |col_idx|
         pos = [row_idx, col_idx]
-        print "#{self[pos].to_s} ".colorize(:background => get_bg_color(pos))
+        print " #{self[pos].to_s} ".rjust(3).colorize(background: bg_color(pos))
       end
       puts
     end
   end
 
   def self.prepare_board
-    self.new.populate
+    b = self.new
+    b.populate
+    b
   end
 
 
