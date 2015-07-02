@@ -28,6 +28,15 @@ class Piece
     Piece.new(@pos, duped_board, @color, king?)
   end
 
+  def valid_move_seq? move_sequence
+    duped_board = @board.dup
+    duped_piece = duped_board[@pos]
+    duped_piece.perform_moves!(move_sequence)
+    true
+  rescue InvalidMoveError
+    false
+  end
+
   protected
 
   def perform_moves! move_sequence
@@ -58,15 +67,6 @@ class Piece
     @board[new_pos] = self
     maybe_promote
     true
-  end
-
-  def valid_move_seq? move_sequence
-    duped_board = @board.dup
-    duped_piece = duped_board[@pos]
-    duped_piece.perform_moves!(move_sequence)
-    true
-  rescue InvalidMoveError
-    false
   end
 
   def off_board? new_pos
