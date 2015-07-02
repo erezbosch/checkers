@@ -21,12 +21,12 @@ class Piece
 
   def perform_moves! move_sequence
     if move_sequence.length == 1
-      slide = perform_slide(move_sequence[0])
-      return if slide
+      return if perform_slide(move_sequence[0])
     end
 
     while move_sequence.length > 0
       jump = perform_jump(move_sequence.shift)
+      @board.display
       raise InvalidMoveError unless jump
     end
   end
@@ -64,7 +64,7 @@ class Piece
   end
 
   def to_s
-    symbol = king? ? "K" : "C"
+    symbol = king? ? "❤" : "★"
     color == :black ? symbol.black : symbol.red
   end
 
