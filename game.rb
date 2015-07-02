@@ -30,14 +30,16 @@ class Game
       raise InvalidMoveError if input.length < 2
 
       @board[input.first].perform_moves(input.drop(1))
+
     rescue InvalidMoveError
       display_message("Invalid move sequence!")
+
       retry
     end
     switch_players!
   end
 
-  def display_message(message)
+  def display_message message
     system "clear"
     puts "\n\n\n#{message.center(75)}"
     sleep(1.5)
@@ -49,7 +51,6 @@ class HumanPlayer
 
   def initialize board, color
     @board, @color = board, color
-    @input = []
   end
 
   def get_moves_from_cursor
@@ -61,7 +62,6 @@ class HumanPlayer
       char = $stdin.getch
 
       case char
-      # handle cursor moves
       when "w"
         @board.move_cursor([-1, 0])
       when "a"
@@ -71,7 +71,11 @@ class HumanPlayer
       when "d"
         @board.move_cursor([0, 1])
       when "\r"
-        @input << cursor unless @input.empty? && invalid_first_selection?
+        if @input.empty?
+          @input << cursor unless invalid_first_selection?
+        else
+          cursor == @input.last ? @input.pop : @input << cursor
+        end
       when "\e"
         exit
       end
@@ -80,6 +84,8 @@ class HumanPlayer
     display_board
     @input
   end
+
+  private
 
   def invalid_first_selection?
     @board[cursor].nil? || @board[cursor].color != color
@@ -92,17 +98,20 @@ class HumanPlayer
   def display_board
     system "clear"
     display = Array.new(8) { "" }
+
     8.times do |row_idx|
       8.times do |col_idx|
-        pos = [row_idx, col_idx]
-        display[row_idx] +=
-          " #{@board[pos].to_s} ".rjust(3).colorize(background: bg_color(pos))
+        display[row_idx] += pos_to_s([row_idx, col_idx])
       end
     end
 
     display.each_with_index do |row, idx|
       puts "#{row} #{instructions(idx)}"
     end
+  end
+
+  def pos_to_s pos
+    " #{@board[pos].to_s} ".rjust(3).colorize(background: bg_color(pos))
   end
 
   def bg_color pos
