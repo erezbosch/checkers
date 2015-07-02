@@ -5,14 +5,15 @@ class Game
   def initialize players = [HumanPlayer.new, HumanPlayer.new]
     @players = players
     @colors = { @players[0] => :black, @players[1] => :red }
-    @board = Board.prepare_board
+    @board = Board.prepare
   end
 
   def play
     until @board.over?
       take_turn
     end
-    p @board.winner
+    system "clear"
+    puts "\n\n#{identify_color(@board.winner)} wins!"
   end
 
   private
@@ -22,7 +23,7 @@ class Game
   end
 
   def take_turn
-    puts "\n\n\n"
+    system "clear"
     @board.display
     identify_turn
 
@@ -45,12 +46,12 @@ class Game
     false
   end
 
-  def identify_player
-    @colors[@players.first].to_s.capitalize
+  def identify_color color
+    color.to_s.capitalize
   end
 
   def identify_turn
-    puts "It's #{identify_player}'s turn."
+    puts "It's #{identify_color(@colors[@players.first])}'s turn."
   end
 end
 

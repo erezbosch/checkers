@@ -19,14 +19,24 @@ class Piece
     perform_moves!(move_sequence)
   end
 
+  def to_s
+    symbol = king? ? "❤" : "★"
+    color == :black ? symbol.black : symbol.red
+  end
+
+  def dup duped_board
+    Piece.new(@pos, duped_board, @color, king?)
+  end
+
+  protected
+
   def perform_moves! move_sequence
     if move_sequence.length == 1
       return if perform_slide(move_sequence[0])
     end
 
-    while move_sequence.length > 0
-      jump = perform_jump(move_sequence.shift)
-      @board.display
+    move_sequence.length.times do |i|
+      jump = perform_jump(move_sequence[i])
       raise InvalidMoveError unless jump
     end
   end
@@ -58,17 +68,6 @@ class Piece
   rescue InvalidMoveError
     false
   end
-
-  def dup duped_board
-    Piece.new(@pos, duped_board, @color, king?)
-  end
-
-  def to_s
-    symbol = king? ? "❤" : "★"
-    color == :black ? symbol.black : symbol.red
-  end
-
-  private
 
   def off_board? new_pos
     new_pos.any? { |coord| !coord.between?(0, 7) }
