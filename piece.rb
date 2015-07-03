@@ -15,7 +15,9 @@ class Piece
   end
 
   def perform_moves move_sequence
-    raise InvalidMoveError unless valid_move_seq?(move_sequence)
+    unless move_sequence.length > 0 && valid_move_seq?(move_sequence)
+      raise InvalidMoveError
+    end
     perform_moves!(move_sequence)
   end
 
@@ -26,6 +28,20 @@ class Piece
 
   def dup duped_board
     Piece.new(@pos, duped_board, @color, king?)
+  end
+
+  def valid_jumps
+    move_diffs.inject([]) do |jumps, diff|
+      new_pos = [pos[0] + 2 * diff[0], pos[1] + 2 * diff[1]]
+      invalid_jump?(new_pos) ? jumps : jumps << new_pos
+    end
+  end
+
+  def valid_slides
+    move_diffs.inject([]) do |slides, diff|
+      new_pos = [pos[0] + diff[0], pos[1] + diff[1]]
+      invalid_slide?(new_pos) ? slides : slides << new_pos
+    end
   end
 
   protected
@@ -74,21 +90,25 @@ class Piece
   end
 
   def invalid_slide? new_pos
+    return true if off_board?(new_pos)
+    
     illegal_move = move_diffs.all? do |diff|
       [@pos[0] + diff[0], @pos[1] + diff[1]] != new_pos
     end
 
-    off_board?(new_pos) || !@board[new_pos].nil? || illegal_move
+    !@board[new_pos].nil? || illegal_move
   end
 
   def invalid_jump? new_pos
+    return true if off_board?(new_pos)
+
     illegal_move = move_diffs.all? do |diff|
       [@pos[0] + 2 * diff[0], @pos[1] + 2 * diff[1]] != new_pos
     end
 
     jumpable = has_enemy_piece?(middle_pos(new_pos)) && @board[new_pos].nil?
 
-    off_board?(new_pos) || !jumpable || illegal_move
+    !jumpable || illegal_move
   end
 
   def middle_pos end_pos

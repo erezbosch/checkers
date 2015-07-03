@@ -120,8 +120,34 @@ class HumanPlayer
     elsif @input.include?(pos)
       :yellow
     else
-      pos.inject(:+).odd? ? :white : :blue
+      if show_as_possible_slide?(pos) || show_as_possible_jump?(pos)
+        :blue
+      else
+        pos.inject(:+).odd? ? :white : :black
+      end
     end
+  end
+
+  def show_as_possible_slide? pos
+    @input.length == 1 && @board[@input.last].valid_slides.include?(pos)
+  end
+
+  def show_as_possible_jump? pos
+    return false if @input.length == 0
+    if @input.length == 2
+      return false if @board[@input.first].valid_slides.include?(@input.last)
+    end
+
+    if @input.length > 1
+      test_board = @board.dup
+      test_board[@input.first].perform_moves(@input.drop(1))
+      test_board[@input.last].valid_jumps.include?(pos)
+    else
+      @board[@input.last].valid_jumps.include?(pos)
+    end
+
+  rescue InvalidMoveError
+    false
   end
 
   def instructions(idx)
