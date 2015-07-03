@@ -1,6 +1,7 @@
 require_relative 'board'
 require 'io/console'
 require 'colorize'
+require 'yaml'
 
 class Game
   def initialize player_classes = [HumanPlayer, HumanPlayer]
@@ -17,7 +18,38 @@ class Game
     display_message("#{@board.winner.to_s.capitalize} wins!")
   end
 
+  def self.set_up_game
+    puts "Welcome to Checkers!"
+    puts "Press 1 to play or 2 to load your game: "
+    if $stdin.getch == "2"
+      self.load
+    else
+      self.new.play
+    end
+  end
+
+  protected
+
+  def self.load
+    begin
+      puts "Enter the name of the file you want to load from: "
+      name = gets.chomp
+      exit if name == "\e"
+      raise NameError unless File.exist?(name)
+      YAML.load_file(name).play
+    rescue NameError
+      print "Invalid filename. "
+      retry
+    end
+  end
+
   private
+
+  def save(name)
+    f = File.new(name, "w")
+    f.puts self.to_yaml
+    f.close
+  end
 
   def switch_players!
     @players.reverse!
@@ -27,12 +59,17 @@ class Game
     begin
       input = @players.first.get_moves_from_cursor
 
+      if input.is_a?(String)
+        save(input)
+        raise InvalidMoveError.new("Game saved!")
+      end
+
       raise InvalidMoveError if input.length < 2
 
       @board[input.first].perform_moves(input.drop(1))
 
-    rescue InvalidMoveError
-      display_message("Invalid move sequence!")
+    rescue InvalidMoveError => e
+      display_message(e.message)
 
       retry
     end
@@ -76,6 +113,8 @@ class HumanPlayer
         else
           cursor == @input.last ? @input.pop : @input << cursor
         end
+      when "r"
+        return get_save_name
       when "\e"
         exit
       end
@@ -86,6 +125,19 @@ class HumanPlayer
   end
 
   private
+
+  def get_save_name
+    begin
+      puts "Enter the name of the file you want to save to: "
+      name = gets.chomp
+      exit if name == "\e"
+      raise NameError if name == ""
+      return name
+    rescue NameError
+      puts "Invalid filename."
+      retry
+    end
+  end
 
   def invalid_first_selection?
     @board[cursor].nil? || @board[cursor].color != color
@@ -163,7 +215,7 @@ class HumanPlayer
     when 5
       "If you're done, press space to process your move."
     when 6
-      "Press esc to quit at any time."
+      "Press R to save or esc to quit at any time."
     else
       ""
     end
@@ -171,6 +223,11 @@ class HumanPlayer
 end
 
 class InvalidMoveError < StandardError
+  attr_reader :message
+
+  def initialize message = "Invalid move sequence!"
+    @message = message
+  end
 end
 
-Game.new.play if __FILE__ == $PROGRAM_NAME
+Game.set_up_game if __FILE__ == $PROGRAM_NAME
